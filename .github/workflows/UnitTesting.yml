@@ -1,46 +1,42 @@
-name: CI
+name: Build and deploy ASP.Net Core app
+
+env:
+  DOTNET_VERSION: '6.0.x'                 # set this to the .NET Core version to use
 
 on:
   push:
     branches:
-    - main
-  pull_request:
-    branches:
-    - main
-    
+      - main
+  workflow_dispatch:
+
 jobs:
-  build_and_test:
-
-    env:
-      BUILD_CONFIG: 'Release'
-      #SOLUTION: 'Solution1/UnitTest.sln'
-      SOLUTION: 'Unit_Testing/ASP_NET Hello World_Unit_Testing.sln'
-
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.x
-
-
-    - name: Restore dependencies
-      run: dotnet restore $SOLUTION
-
-    - name: Build
-      run: dotnet build $SOLUTION --configuration $BUILD_CONFIG
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       
-    - name: Test
-      run: dotnet test $SOLUTION --configuration $BUILD_CONFIG --logger "trx;LogFileName=test-results.trx" || true
-      
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: always()
-      with:
-        name: DotNET Tests
-        path: "**/test-results.trx"                            
-        reporter: dotnet-trx
-        fail-on-error: true
+      - name: Set up dependency caching for faster builds
+        uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: dotnet publish
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifactfile_UAT
+          path: ${{env.DOTNET_ROOT}}/myapp
