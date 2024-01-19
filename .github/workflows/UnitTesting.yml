@@ -1,7 +1,9 @@
 name: Build and deploy ASP.Net Core app
 
 env:
-  DOTNET_VERSION: '8.0.x'                 # set this to the .NET Core version to use
+  DOTNET_VERSION: '8.0.x' # set this to the .NET Core version to use
+  BUILD_CONFIG: 'Release'
+  SOLUTION: 'Unit_Testing/ASP_NET Hello World_Unit_Testing.sln'
 
 on:
   push:
@@ -31,6 +33,18 @@ jobs:
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
+
+      - name: Test
+        run: dotnet test $SOLUTION --configuration $BUILD_CONFIG --logger "trx;LogFileName=test-results.trx" || true
+      
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+         name: DotNET Tests
+         path: "**/test-results.trx"                            
+         reporter: dotnet-trx
+          fail-on-error:true
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
