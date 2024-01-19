@@ -14,7 +14,7 @@ jobs:
     env:
       BUILD_CONFIG: 'Release'
       #SOLUTION: 'Solution1/UnitTest.sln'
-      SOLUTION: 'ASP_NET Hello World_Unit_Testing.sln'
+      SOLUTION: 'Unit_Testing/ASP_NET Hello World_Unit_Testing.sln'
 
     runs-on: ubuntu-latest
 
