@@ -1,4 +1,4 @@
-name: Build and deploy ASP.Net Core app
+name: Build and deploy ASP.Net Core app 
 
 env:
   DOTNET_VERSION: '8.0.x' # set this to the .NET Core version to use
